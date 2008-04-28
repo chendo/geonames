@@ -20,7 +20,7 @@ cities15000.txt
 Example
 =======
 
-Example goes here.
+>rake geonames:import
 
 
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+Copyright (c) 2008 Resistor Software, released under the MIT license
