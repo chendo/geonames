@@ -1,7 +1,20 @@
-Geonames
+Resistor::Geonames
 ========
+This is a ruby wrapper for the geonames database available at www.geonames.org
 
-Introduction goes here.
+This plugin requires you to download the following files from geonames.org's server and place
+in this plugin's /db directory:
+
+countryInfo.txt
+	- this file is a list of all countries in the world
+admin1Codes.txt
+	- this file contains prov/state info for all countries
+cities1000.txt
+	- list of world-cities with population upto 1000
+cities5000.txt
+	- list of world-cities with population upto 5000
+cities15000.txt
+	- list of world-cities with population > 15000
 
 
 Example
