@@ -68,40 +68,24 @@ module Resistor
             while (row = f.gets)
                 row = row.split(/\t/)
                 puts row[0]
-                @@countries[row[0]] = row
+                @@countries[row[0]] = row   # <-- hash of countries on iso code, eg: canada = @@countries["CA"]
             end
         end
         
         ##
-        # import_regions        
-        # The main 'geoname' table has the following fields :
-        # ---------------------------------------------------------------------------------------
-        # [0] geonameid         : integer id of record in geonames database
-        # [1] name              : name of geographical point (utf8) varchar(200)
-        # [2] asciiname         : name of geographical point in plain ascii characters, varchar(200)
-        # [3] alternatenames    : alternatenames, comma separated varchar(4000)
-        # [4] latitude          : latitude in decimal degrees (wgs84)
-        # [5] longitude         : longitude in decimal degrees (wgs84)
-        # [6] feature class     : see http://www.geonames.org/export/codes.html, char(1)
-        # [7] feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
-        # [8] country code      : ISO-3166 2-letter country code, 2 characters
-        # [9] cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
-        # [10] admin1 code       : fipscode (subject to change to iso code), isocode for the us and ch, see file admin1Codes.txt for display names of this code; varchar(20)
-        # [11] admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
-        # [12] admin3 code       : code for third level administrative division, varchar(20)
-        # [13] admin4 code       : code for fourth level administrative division, varchar(20)
-        # [14] population        : integer 
-        # [15] elevation         : in meters, integer
-        # [16] gtopo30           : average elevation of 30'x30' (ca 900mx900m) area in meters, integer
-        # [17] timezone          : the timezone id (see file timeZone.txt)
-        # [18] modification date : date of last modification in yyyy-MM-dd format
+        # import_regions                        
+        # [0] AD.00     <-- info = row[0].split('.') 
+        # [1] name
         #
         def self.import_regions
             f = File.open(REGIONS)
             while (row = f.gets)
-                row = row.split(/\t/)
+                row = row.split(/\t/)                
+                (country, region_index) = row[0].split('.')
                 
-                puts row.to_s
+                if (!@@countries[country].nil?)
+                    puts "Country: #{@@countries[country][4]}, region_index: #{region_index}, city #{row[1]}"
+                end
             end
             
         end
