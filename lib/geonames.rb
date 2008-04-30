@@ -93,12 +93,24 @@ module Resistor
                 (country, region_index) = row[0].split('.')
                 if (!@@countries[country].nil?)
                     if region_index != '00'
-                        puts "Attempting to add region: #{row[1]}"
-                        r = Region.create(:iso => region_index, :country_id => @@countries[country]["id"], :name => row[1])
-                        if !r.id
-                            puts "Region #{r.name} already exists"
+                        #puts "Checking if record exists #{row[1]}"
+                        r = Region.find(:first, :conditions => {:name => row[1], :iso => region_index, :country_id => @@countries[country]["id"]})
+                        puts "looking for r to be what #{r.class.to_s}"
+                        # if r is not an ActiveRecord it is probably a good idea to create one
+                        if r.nil?
+                            puts "Attempting to add region: #{row[1]}"
+                            r = Region.create(:iso => region_index, :country_id => @@countries[country]["id"], :name => row[1])
                         else
-                            puts "Newly added Region #{Region.name}"
+                            #puts("Found an existing match, so we skipped creating a new one")
+                        end
+
+                        ###
+                        # everytime a new region is created, and attached to a country, we should add this new region
+                        # to the @@countries so that we can quickly identify the PK of the region for cities since a city
+                        # will have the country ISO code and the Region ISO code
+                        puts "no matter what, r is an object of #{r.class.to_s}"
+                        unless r.nil?
+                           @@countries[country][region_index] = r.id
                         end
                     end
                 else
@@ -107,8 +119,9 @@ module Resistor
             end
         end
 
+
         ##
-        # import_cities1000
+        # import_cities Schema (same for 1000, 5000 and 15000+ cities)
         # ---------------------------------------------------------------------------------------
         # [0] geonameid         : integer id of record in geonames database
         # [1] name              : name of geographical point (utf8) varchar(200)
@@ -130,62 +143,43 @@ module Resistor
         # [17] timezone          : the timezone id (see file timeZone.txt)
         # [18] modification date : date of last modification in yyyy-MM-dd format
         #
+        # @param {File} file_ptr
+        def self.import_cities(file_ptr)
+            counter = 0
+            while (row = file_ptr.gets)
+                # what do we want to inert into the city table
+                row = row.split(/\t/)
+
+                # first, find me a region to connect this city to, using the country and fips code
+                region_id = @@countries[row[8]][row[10]]
+                #puts "city will belong to region #{region_id}"
+
+                # Check to see if the city already exists or not based on the criteria we'll use to enter it into the system
+                c = City.find(:first, :conditions => {:geoname_id => row[0], :name => row[1], :region_id => region_id})
+                #puts "city object #{c.class.to_s}"
+
+                if c.nil?
+                    #puts "City was not found in the database, so we create a new one"
+                    #puts "name #{row[1]} geoname_id #{row[0]}, region_id #{row[10]} latitude #{row[4]}, longtitude #{row[5]}"
+                    unless region_id.nil?
+                        puts "Adding City #{counter += 1} #{row[1]}"
+                        City.create(:geoname_id => row[0], :region_id => region_id, :name => row[1], :name_ascii => row[2], :lat => row[4], :lng => row[5])
+                    end
+                end
+            end
+            puts "There are now #{City.count()} cities in the city table"
+        end
+
         def self.import_cities1000
-
+            self.import_cities(File.open(CITIES_1000))
         end
 
-        ##
-        # import_cities5000
-        # ---------------------------------------------------------------------------------------
-        # [0] geonameid         : integer id of record in geonames database
-        # [1] name              : name of geographical point (utf8) varchar(200)
-        # [2] asciiname         : name of geographical point in plain ascii characters, varchar(200)
-        # [3] alternatenames    : alternatenames, comma separated varchar(4000)
-        # [4] latitude          : latitude in decimal degrees (wgs84)
-        # [5] longitude         : longitude in decimal degrees (wgs84)
-        # [6] feature class     : see http://www.geonames.org/export/codes.html, char(1)
-        # [7] feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
-        # [8] country code      : ISO-3166 2-letter country code, 2 characters
-        # [9] cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
-        # [10] admin1 code       : fipscode (subject to change to iso code), isocode for the us and ch, see file admin1Codes.txt for display names of this code; varchar(20)
-        # [11] admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80)
-        # [12] admin3 code       : code for third level administrative division, varchar(20)
-        # [13] admin4 code       : code for fourth level administrative division, varchar(20)
-        # [14] population        : integer
-        # [15] elevation         : in meters, integer
-        # [16] gtopo30           : average elevation of 30'x30' (ca 900mx900m) area in meters, integer
-        # [17] timezone          : the timezone id (see file timeZone.txt)
-        # [18] modification date : date of last modification in yyyy-MM-dd format
-        #
         def self.import_cities5000
-
+            self.import_cities(File.open(CITIES_5000))
         end
 
-        ##
-        # import_cities15000
-        # ---------------------------------------------------------------------------------------
-        # [0] geonameid         : integer id of record in geonames database
-        # [1] name              : name of geographical point (utf8) varchar(200)
-        # [2] asciiname         : name of geographical point in plain ascii characters, varchar(200)
-        # [3] alternatenames    : alternatenames, comma separated varchar(4000)
-        # [4] latitude          : latitude in decimal degrees (wgs84)
-        # [5] longitude         : longitude in decimal degrees (wgs84)
-        # [6] feature class     : see http://www.geonames.org/export/codes.html, char(1)
-        # [7] feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
-        # [8] country code      : ISO-3166 2-letter country code, 2 characters
-        # [9] cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
-        # [10] admin1 code       : fipscode (subject to change to iso code), isocode for the us and ch, see file admin1Codes.txt for display names of this code; varchar(20)
-        # [11] admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80)
-        # [12] admin3 code       : code for third level administrative division, varchar(20)
-        # [13] admin4 code       : code for fourth level administrative division, varchar(20)
-        # [14] population        : integer
-        # [15] elevation         : in meters, integer
-        # [16] gtopo30           : average elevation of 30'x30' (ca 900mx900m) area in meters, integer
-        # [17] timezone          : the timezone id (see file timeZone.txt)
-        # [18] modification date : date of last modification in yyyy-MM-dd format
-        #
         def self.import_cities15000
-
+            self.import_cities(File.open(CITIES_15000))
         end
     end
 end
