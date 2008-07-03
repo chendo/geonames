@@ -5,20 +5,52 @@
 desc 'Geonames import task'
 namespace :geonames do
 
+    task :dump => :environment do
+        puts "*************************************************************************************"
+        puts " Dumping geonames tables to /db with pg_dump"
+        puts "*************************************************************************************"
+
+        fprefix = "db/#{RAILS_ENV}_"
+        config = ActiveRecord::Base.configurations[RAILS_ENV]
+
+        ["country", "country_region", "country_region_city"].each do |name|
+            cmd = "/usr/bin/pg_dump -U postgres -t #{name} -a cca_backend_development --format=c > #{fprefix + name}.sql"
+            # show cmd user before execing
+            puts ">#{cmd}"
+            puts `#{cmd}`
+        end
+    end
+
+    task :restore => :environment do
+        puts "*************************************************************************************"
+        puts " Restoring geonames tables to from backup in /db "
+        puts "*************************************************************************************"
+        fprefix = "db/#{RAILS_ENV}_"
+        config = ActiveRecord::Base.configurations[RAILS_ENV]
+
+        ["country", "country_region", "country_region_city"].each do |name|
+            cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d cca_backend_development --format=c < #{fprefix + name}.sql"
+            # show cmd user before execing
+            puts ">#{cmd}"
+            puts `#{cmd}`
+        end
+
+    end
+
     task :import => :environment do
         puts "*************************************************************************************"
         puts " Importing geonames "
         puts "*************************************************************************************"
-                       
-        Resistor::Geonames.import                                                                
+
+        Resistor::Geonames.import
     end
-    
+
     desc "Export geonames to /db"
     task :export => :environment do
         puts "*************************************************************************************"
         puts " Exporting geonames to db/geonames.yml "
         puts "*************************************************************************************"
-        
+
         output = {
             :countries => [],
             :regions => [],
@@ -27,12 +59,12 @@ namespace :geonames do
         cities = City.find(:all, :include => [:region])
         regions = Region.find(:all, :include => [:country])
         countries = Country.find(:all)
-                
+
         countries.each do |c|
             output[:countries] << {
                 :iso => c.iso,
                 :name => c.name
-            }          
+            }
         end
         regions.each do |r|
             output[:regions] << {
@@ -50,25 +82,23 @@ namespace :geonames do
                 :lng => c.lng
             }
         end
-                
+
         f = File.new('db/geonames.yml', File::CREAT|File::RDWR|File::TRUNC, 0644)
         f << output.to_yaml
-        f.close   
-        
+        f.close
+
         if !Airports.nil?
             output = {:airports => []}
             airports = Airport.find(:all)
             airports.each do |a|
-                output[:airports] << a.attributes    
+                output[:airports] << a.attributes
             end
             f = File.new('db/airports.yml', File::CREAT|File::RDWR|File::TRUNC, 0644)
             f << output.to_yaml
-            f.close 
+            f.close
         end
-        
+
         Resistor::Geonames.import
-
-
     end
 end
 
