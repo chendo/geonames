@@ -10,11 +10,10 @@ namespace :geonames do
         puts " Dumping geonames tables to /db with pg_dump"
         puts "*************************************************************************************"
 
-        fprefix = "db/#{RAILS_ENV}_"
         config = ActiveRecord::Base.configurations[RAILS_ENV]
 
         ["country", "country_region", "country_region_city"].each do |name|
-            cmd = "/usr/bin/pg_dump -U postgres -t #{name} -a cca_backend_development --format=c > #{fprefix + name}.sql"
+            cmd = "/usr/bin/pg_dump -U postgres -t #{name} -a #{config['database']} --format=c > #{name}.sql"
             # show cmd user before execing
             puts ">#{cmd}"
             puts `#{cmd}`
@@ -25,11 +24,11 @@ namespace :geonames do
         puts "*************************************************************************************"
         puts " Restoring geonames tables to from backup in /db "
         puts "*************************************************************************************"
-        fprefix = "db/#{RAILS_ENV}_"
+
         config = ActiveRecord::Base.configurations[RAILS_ENV]
 
         ["country", "country_region", "country_region_city"].each do |name|
-            cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d cca_backend_development --format=c < #{fprefix + name}.sql"
+            cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d #{config['database']} --format=c < #{name}.sql"
             # show cmd user before execing
             puts ">#{cmd}"
             puts `#{cmd}`
