@@ -13,7 +13,7 @@ namespace :geonames do
         config = ActiveRecord::Base.configurations[RAILS_ENV]
 
         ["country", "country_region", "country_region_city"].each do |name|
-            cmd = "/usr/bin/pg_dump -U postgres -t #{name} -a #{config['database']} --format=c > #{name}.sql"
+            cmd = "/usr/bin/pg_dump -U postgres -t #{name} -a #{config['database']} --format=c > db/#{name}.sql"
             # show cmd user before execing
             puts ">#{cmd}"
             puts `#{cmd}`
@@ -28,7 +28,7 @@ namespace :geonames do
         config = ActiveRecord::Base.configurations[RAILS_ENV]
 
         ["country", "country_region", "country_region_city"].each do |name|
-            cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d #{config['database']} --format=c < #{name}.sql"
+            cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d #{config['database']} --format=c < db/#{name}.sql"
             # show cmd user before execing
             puts ">#{cmd}"
             puts `#{cmd}`
