@@ -1,10 +1,11 @@
 ###
-# Apollo rake tasks
-# @author Chris Scott
-#
-desc 'Geonames import task'
+# Geonames plugin is great for building up and tearing down some commonly needed region tables
+# author Chris Scott
+# author D. Lazar
+
 namespace :geonames do
 
+    desc 'dump - use pgsql to dump data to files'    
     task :dump => :environment do
         puts "*************************************************************************************"
         puts " Dumping geonames tables to /db with pg_dump"
@@ -20,6 +21,7 @@ namespace :geonames do
         end
     end
 
+    desc 'restore - use pgsql to restore data from files'
     task :restore => :environment do
         puts "*************************************************************************************"
         puts " Restoring geonames tables to from backup in /db "
@@ -36,6 +38,7 @@ namespace :geonames do
 
     end
 
+    desc 'import - read text files for country, region and city tables to build database'
     task :import => :environment do
         puts "*************************************************************************************"
         puts " Importing geonames "
@@ -44,7 +47,7 @@ namespace :geonames do
         Resistor::Geonames.import
     end
 
-    desc "Export geonames to /db"
+    desc "export data to yaml files"
     task :export => :environment do
         puts "*************************************************************************************"
         puts " Exporting geonames to db/geonames.yml "
