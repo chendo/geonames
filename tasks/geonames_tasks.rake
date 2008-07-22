@@ -33,7 +33,12 @@ namespace :geonames do
             cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d #{config['database']} --format=c < db/#{name}.sql"
             # show cmd user before execing
             puts "Attempting to restore #{name}"
-            puts `#{cmd}` if File.exists?(name)
+            result = `#{cmd}` if File.exist?("db/#{name}.sql")
+            unless  !$?.nil?
+                puts "command failed: #{cmd}" 
+            else 
+                puts "Command success..."
+            end
         end
 
     end
