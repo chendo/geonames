@@ -32,8 +32,8 @@ namespace :geonames do
         ["country", "country_region", "country_region_city", "country_region_city_airport"].each do |name|
             cmd = "/usr/bin/pg_restore -U postgres -t #{name} -a -d #{config['database']} --format=c < db/#{name}.sql"
             # show cmd user before execing
-            puts ">#{cmd}"
-            puts `#{cmd}`
+            puts "Attempting to restore #{name}"
+            puts `#{cmd}` if File.exists?(name)
         end
 
     end
