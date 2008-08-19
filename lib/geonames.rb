@@ -50,6 +50,18 @@ module Resistor
         # [6] areaInSqKm
         # [7] population
         # [8] continent
+        # [9] top level domain
+        # [10] Currency code
+        # [11] Currency name
+        # [12] Phone
+        # [13] Postal Code Format
+        # [14] Postal Code Regex
+        # [15] Languages
+        # [16] Geoname id
+        # [17] Neighbours
+        # [18] Equivalent Fips Code
+
+
         # [9] languages
         # [10] currency
         # [11] geonameId
@@ -60,7 +72,7 @@ module Resistor
 
             # first get rid of comments and headers
             line = f.gets
-            while (line.match(/^#/) or line.match(/^iso/))
+            while (line.match(/^#/) or line.match(/^iso/i))
                 line = f.gets
             end
 
@@ -68,7 +80,8 @@ module Resistor
             while (line)
                 line = line.split(/\t/)
                 puts "Attempting to add country: #{line[4]}"
-                @@countries[line[0]] = Country.create(:iso => line[0], :name => line[4], :geoname_id => line[11])
+                @@countries[line[0]] = Country.create(:iso => line[0], :name => line[4], :geoname_id => line[16])
+                #puts "this is line 11" + line[11]
 
                 # if the country already exists, add the existing record to the country hash
                 if @@countries[line[0]].id.nil?
