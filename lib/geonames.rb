@@ -60,11 +60,6 @@ module Resistor
         # [16] Geoname id
         # [17] Neighbours
         # [18] Equivalent Fips Code
-
-
-        # [9] languages
-        # [10] currency
-        # [11] geonameId
         #
         def self.import_countries
 
